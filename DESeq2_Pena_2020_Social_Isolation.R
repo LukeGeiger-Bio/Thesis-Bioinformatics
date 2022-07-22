@@ -6,7 +6,7 @@ if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 BiocManager::install(version = "3.14") #silly program wants earlier version
 
-BiocManager::install("DESeq2") #force u to install uwu
+BiocManager::install("DESeq2") #force u to install 
 install.packages("data.frame")
 
 #Library loading
@@ -43,10 +43,10 @@ flipped_CountMatrix <- t(CountMatrix_ordered)#To combine, so that rownames are s
 merge_matrix <- merge(cut_metadata_ordered, flipped_CountMatrix, by ='row.names', all = FALSE)#Merges metadata and counts
 merge_matrix
 merge_grouped <-merge_matrix %>% group_by(Sample.Name)#Groups counts for runs by identifier
-select_grouped <-merge_grouped[c(3:17)]#Pulls everything but run names bc we've grouped by animal
+select_grouped <-merge_grouped[c(3:40206)]#Pulls everything but run names bc we've grouped by animal, double check column numbers
 select_grouped
-sum_matrix <-select_grouped %>% group_by(Sample.Name) %>% summarise_at(vars(c(6:14)), sum)#A bit redundant to group again tbh
-sum_matrix#This variation on summarise works on GC2 as of July 2022
+sum_matrix <-select_grouped %>% group_by(Sample.Name) %>% summarise_at(vars(c(6:40206)), sum)#A bit redundant to group again tbh
+sum_matrix#This variation of summarise (summarise_at(vars,)) works on GC2 as of July 2022
 #######################do this in gen-comp2^^
 
 
@@ -116,7 +116,7 @@ select <- order(rowMeans(counts(dds,normalized=TRUE)),
                 decreasing=TRUE)[1:20]
 df <- as.data.frame(colData(dds)[,c("acute.chronic","housing","region","sex")])
 pheatmap(assay(ntd)[select,], cluster_rows=FALSE, show_rownames=FALSE,
-         cluster_cols=TRUE, annotation_col=df)#Options for the drodrogram and sample clustering by similarity
+         cluster_cols=TRUE, annotation_col=df)#Options for the dendrogram and sample clustering by similarity
 
 
 
