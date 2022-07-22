@@ -1,0 +1,182 @@
+	1.) Ffq data import. Located at <https://github.com/pachterlab/ffq>. The tool can be
+installed in a Python environment using:
+
+$ pip install ffq
+
+Gather your accession numbers (SRA, GEO, ENCODE, Bioproject, Biosample, DOI accepted)
+and paste n at a time into:
+
+### Script ###
+
+#!/bin/bash
+#SBATCH --job-name=ffq_ftp
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=8G
+#SBATCH --mail-type=END,FAIL,BEGIN
+#SBATCH --mail-user=lgeiger@princeton.edu
+
+module purge
+module load conda
+conda activate seqtools:
+
+$ ffq --ftp <ACCESSION> \ grep -Eo '"url": "[^"]*"' | xargs wget -P <PATH FOR FILE INSTALLATION>
+
+### End of Script ###
+
+
+	2.) Generate md5 checksum values for transferred files, future projects using the same
+data can verify against these, or you can verify against a repository md5 if available. 
+*Execute this script in the directory one level above where you specified your
+file ftp above, make sure it is executable*
+
+### Script ###
+
+#!/bin/bash
+
+find -type f -exec md5sum "{}" + > <NAME OF OUTPUT FILE>.txt
+
+### End of Script ###
+
+
+	3.) Quality check your .FASTQ files with fastQC. It should already be installed, but
+feel free to download and unpack in </usr/local>, make sure to change your $PATH :
+
+$export PATH=$PATH:/installation/location
+
+Then, run the following in a subdirectory one level above your files, excluding directories or files as needed:
+
+### Script ###
+
+#!/bin/bash
+#SBATCH --job-name=fastqc_pena
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=64G
+#SBATCH --mail-type=END,FAIL,BEGIN
+#SBATCH --mail-user=lgeiger@princeton.edu
+
+for i in $(ls /Genomics/kocherlab/lgeiger/SeniorThesis/Data/PenaData/AMYgrouped/*.fastq.gz 
+/Genomics/kocherlab/lgeiger/SeniorThesis/Data/PenaData/AMYiso/*.fastq.gz 
+/Genomics/kocherlab/lgeiger/SeniorThesis/Data/PenaData/NACgrouoped/*.fastq.gz 
+/Genomics/kocherlab/lgeiger/SeniorThesis/Data/PenaData/NACiso/*.fastq.gz 
+/Genomics/kocherlab/lgeiger/SeniorThesis/Data/PenaData/VTAgrouped/*.fastq.gz 
+/Genomics/kocherlab/lgeiger/SeniorThesis/Data/PenaData/VTAiso/*.fastq.gz 
+/Genomics/kocherlab/lgeiger/SeniorThesis/Data/PenaData/PFCgrouped/*.fastq.gz 
+/Genomics/kocherlab/lgeiger/SeniorThesis/Data/PenaData/PFCiso/*.fastq.gz | uniq)
+
+do
+
+fastqc -o /Genomics/kocherlab/lgeiger/SeniorThesis/Data/PenaData/QC
+
+done
+
+### End of Script ###
+
+	4.) Generate a genomic index using the STAR aligner <https://pubmed.ncbi.nlm.nih.gov/23104886/>.
+Steps vary per organism; indices exist for the Kocher Lab, but for the murine RNA-seq samples I 
+generated a new mm39 index. Download genomic FNA and GFF/GTF files directly to a subdirectory
+with the command: 
+
+$ wget <HTTPS:// FTP PATH> -P <PATH FOR FILE INSTALLATION>
+
+***ENSURE THAT BOTH FILES USE THE SAME ANNOTATION CONVENTIONS (ie, refseq/genbank - but use refseq)***
+Then, run the following script:
+
+### Script ###
+
+#!/bin/bash
+#SBATCH --job-name=index_pdata_new_refseq
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=64G
+#SBATCH --mail-type=END,FAIL,BEGIN
+#SBATCH --mail-user=lgeiger@princeton.edu
+
+module purge
+module load STAR
+
+STAR --runThreadN 12 \
+	--runMode genomeGenerate \
+	--genomeDir /Genomics/grid/users/lgeiger/SeniorThesis/Data/new_mm39_refseq \
+	--genomeFastaFiles /Genomics/grid/users/lgeiger/SeniorThesis/Data/GCF_000001635.27_GRCm39_genomic.fna \
+	--sjdbGTFfile /Genomics/grid/users/lgeiger/SeniorThesis/Data/GCF_000001635.27_GRCm39_genomic.gff \
+	--sjdbOverhang 99
+
+### End of Script ###
+
+
+	5.) It's now time to align your samples to the genomic index you created above. We 
+like to see >90% alignment! Low alignment may indicate an issue with your annotations file. 
+
+### Script ### 
+
+#!/bin/bash
+#SBATCH --job-name=alignment_pdata_amy_g_refseq
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=6
+#SBATCH --mem=48G
+#SBATCH --mail-type=END,FAIL,BEGIN
+#SBATCH --mail-user=lgeiger@princeton.edu
+
+module purge
+module load STAR
+
+for i in $(ls /Genomics/grid/users/lgeiger/SeniorThesis/Data/PenaData/AMYgrouped/*.fastq.gz | rev | cut -c 10- | rev | cut -c 68- | uniq)
+
+do
+
+STAR --runThreadN 6 \
+	--genomeDir /Genomics/grid/users/lgeiger/SeniorThesis/Data/new_mm39_refseq \
+	--readFilesIn /Genomics/grid/users/lgeiger/SeniorThesis/Data/PenaData/AMYgrouped/"${i}.fastq.gz" \
+	--outFileNamePrefix /Genomics/grid/users/lgeiger/SeniorThesis/Data/PenaData/Alignments/AMYgrouped_a/"${i}" \
+	--readFilesCommand zcat \
+	--outSAMtype BAM SortedByCoordinate \
+	--sjdbGTFfile /Genomics/grid/users/lgeiger/SeniorThesis/Data/GCF_000001635.27_GRCm39_genomic.gff
+
+done
+
+### End of Script ###
+
+	6.) Now we want to bin read alignments and generate a matrix of the number of times the region
+specified by a particular genomic identifier had an RNA read assigned to it from our samples. 
+How the program determines what is and isn't an assignment is in large part up to you;
+additional arguments and documentation is available at <https://bioconductor.org/packages/release/bioc/vignettes/Rsubread/inst/doc/SubreadUsersGuide.pdf>.
+Ensure you have a python environment with the "subread" package installed:
+
+### Script ###
+
+#!/bin/bash
+#SBATCH --job-name=subread_featureCounts_amyg
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=6
+#SBATCH --mem=48G
+#SBATCH --mail-type=END,FAIL,BEGIN
+#SBATCH --mail-user=lgeiger@princeton.edu
+
+module purge
+module load conda
+conda activate seqtools2
+
+for i in $(ls /Genomics/grid/users/lgeiger/SeniorThesis/Data/PenaData/Alignments/AMYgrouped_a/*.bam | cut -c 81- | rev | cut -c 30- | rev | uniq)
+
+do
+
+featureCounts -T 6 -a /Genomics/grid/users/lgeiger/SeniorThesis/Data/GCF_000001635.27_GRCm39_genomic.gff \
+ -t gene -g gene_id -o /Genomics/grid/users/lgeiger/SeniorThesis/Data/PenaData/Counts/AMYg/"${i}.counts.txt" \
+--verbose /Genomics/grid/users/lgeiger/SeniorThesis/Data/PenaData/Alignments/AMYgrouped_a/"${i}Aligned.sortedByCoord.out.bam"
+
+done
+
+### End of Script ###
+
+For reference, grouping by 'gene' features and disallowing multimapped reads I achieved ~70-80% assignments.
+
+	7.) Finally, we have count matrices we can manipulate in RStudio/DESeq2. Remove the header (after saving the files somewhere else)
+'live' in the current directory using the following command: 
+
+$ >sed -i '1d' *txt
+
+Then, export all count matrices (-r argument moves whole directory) to a home directory of your choosing, *from your local terminal*:
+
+$ scp -r lgeiger@gen-comp2.princeton.edu:~/SeniorThesis/dir ~/home/dir
