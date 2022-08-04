@@ -14,8 +14,8 @@ Global metadata file for all runs and the experiment in general.
 SBASH job scripts for running pre-DESeq2 RNA-seq analysis steps on a computing cluster, from .FASTA to count matrices. 
 ## cts_sum_m
 Processed counts matrix; download and re-upload into R environment to remove factor levels brought on by DESeq2 steps on a computing cluster. 
-## Gene_OntologyAll.R
-R code for performing directional enrichment analysis on mouse, fly, bumblebee, and finch samples. Dotplot, ridgeplot, barplot. 
+## GeneOntology_All.R
+R code for performing directional pathway enrichment analysis on mouse, fly, bumblebee, and finch samples. Dotplot, ridgeplot, barplot. 
 
 # Data Availability
 ## Murine Data
