@@ -35,20 +35,28 @@ GSE146472, Adolescent Social Isolation Reprograms the Medial Amygdala: Transcrip
 Deena M. Walker, Xianxiao Zhou, Aarthi Ramakrishnan, Hannah M. Cates, Ashley M. Cunningham, Catherine J. Peña, Rosemary C. Bagot, Orna Issler, Yentl Van der Zee, Andrew P. Lipschultz, Arthur Godino, Caleb J. Browne, Georgia E. Hodes, Eric M. Parise, Angélica Torres-Berrio, Pamela J. Kennedy, Li Shen, Bin Zhang, Eric J. Nestler
 bioRxiv 2020.02.18.955187; doi: https://doi.org/10.1101/2020.02.18.955187
 
+Mouse proteome retrieved from Ensembl database https://ftp.ensembl.org/pub/release-108/fasta/mus_musculus/pep/
+
 ## Finch Data
 ENA PRJEB28085, Acute social isolation alters neurogenomic state in songbird forebrain,
 Julia M. Georgea, Zachary W. Bella, Daniel Condliffe, Kirstin Dohrer, Teresa Abaurrea, Karen Spencer, Albertine Leitão, Manfred Gahr, Paul J. Hurd and David F. Clayton
 doi: https://www.pnas.org/cgi/doi/10.1073/pnas.1820841116
+
+_Ab initio_ finch proteome retrieved from Ensembl database https://ftp.ensembl.org/pub/release-108/fasta/taeniopygia_guttata/pep/
 
 ## Fly Data
 GSE137498, Chronic social isolation signals starvation and reduces sleep in Drosophila,
 Wanhe Li, Zikun Wang, Sheyum Syed, Cheng Lyu, Samantha Lincoln, Jenna O’Neil, Andrew D. Nguyen, Irena Feng & Michael W. Young
 doi: https://doi.org/10.1038/s41586-021-03837-0
 
+Fly proteome retrieved from Ensembl databse https://ftp.ensembl.org/pub/release-108/fasta/drosophila_melanogaster/pep/
+
 ## Bee Data
 BioProject : PRJNA787650, Isolation disrupts social interactions and destabilizes brain development in bumblebees,
 Z. Yan Wang, Grace C. McKenzie-Smith, Weijie Liu, Hyo Jin Cho, Talmo Pereira, Zahra Dhanerawala, Joshua W. Shaevitz, and Sarah D. Kocher
 doi: https://doi.org/10.1016/j.cub.2022.04.066
+
+Bee proteome retrieved from Ensembl database https://ftp.ensemblgenomes.org/pub/metazoa/release-55/fasta/bombus_impatiens/pep/
 
 # Tool Citations
 ## DESeq2:
